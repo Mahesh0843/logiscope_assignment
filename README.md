@@ -101,3 +101,17 @@ In **Servlets**, **POST** is used for all operations because:
 - **Handling Large Payloads**: `POST` supports sending larger data in the request body.
 - **Why Not DELETE?** Many browsers and HTML forms do not support `DELETE` directly, making `POST` a more compatible choice.
 
+## 🖥️ Output Screenshots
+
+### 1️⃣ Registration Page
+![Registration Page](register.png)
+
+### 2️⃣ User Login
+![User List](login.png)
+
+### 3️⃣ Update User
+![Update User](update_user.png)
+
+### 4️⃣ Filter Users
+![Filter Users](filter_users.png)
+
