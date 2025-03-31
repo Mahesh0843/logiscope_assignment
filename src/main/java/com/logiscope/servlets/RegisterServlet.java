@@ -19,23 +19,43 @@ public class RegisterServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
+        PrintWriter out = response.getWriter();
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PrintWriter out = response.getWriter()) {
+        if (firstName == null || lastName == null || email == null || password == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{"
+                    + "\"code\": 400,"
+                    + "\"message\": \"All fields are required\","
+                    + "\"data\": null"
+                    + "}");
+            return;
+        }
 
+        try (Connection conn = DatabaseConnection.getConnection()) {
             if (conn == null) {
-                showPopup(out, "Database Connection Failed!", "register.jsp");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); 
+                out.print("{"
+                        + "\"code\": 500,"
+                        + "\"message\": \"Database Connection Failed\","
+                        + "\"data\": null"
+                        + "}");
                 return;
             }
 
             if (userExists(email, conn)) {
-                showPopup(out, "User Already Exists for this Email Address!", "register.jsp");
+                response.setStatus(HttpServletResponse.SC_CONFLICT); 
+                out.print("{"
+                        + "\"code\": 409,"
+                        + "\"message\": \"User Already Exists\","
+                        + "\"data\": null"
+                        + "}");
                 return;
             }
 
@@ -47,34 +67,51 @@ public class RegisterServlet extends HttpServlet {
                 stmt.setString(4, password);
                 stmt.executeUpdate();
             }
+
             try (PreparedStatement selectStmt = conn.prepareStatement(
                     "SELECT id, first_name, last_name FROM users WHERE email = ?")) {
                 selectStmt.setString(1, email);
                 try (ResultSet rs = selectStmt.executeQuery()) {
                     if (rs.next()) {
-                        HttpSession oldSession = request.getSession(false);
-                        if (oldSession != null) {
-                            oldSession.invalidate();
-                        }
+                        HttpSession session = request.getSession(true);
+                        session.setAttribute("id", rs.getInt("id"));
+                        session.setAttribute("first_name", rs.getString("first_name"));
+                        session.setAttribute("last_name", rs.getString("last_name"));
+                        session.setAttribute("email", email);
+                        session.setMaxInactiveInterval(24 * 60 * 60);
 
-                        // Start a new session
-                        HttpSession newSession = request.getSession(true);
-                        newSession.setAttribute("id", rs.getInt("id"));
-                        newSession.setAttribute("first_name", rs.getString("first_name"));
-                        newSession.setAttribute("last_name", rs.getString("last_name"));
-                        newSession.setAttribute("email", email);
-                        newSession.setMaxInactiveInterval(24 * 60 * 60); // 24 hours
-
-                        showPopup(out, "Registration Successful!", "userDetails.jsp");
+                        response.setStatus(HttpServletResponse.SC_CREATED); // 201 Created
+                        out.print("{"
+                                + "\"code\": 201,"
+                                + "\"message\": \"Registration Successful\","
+                                + "\"data\": {"
+                                + "\"id\": " + rs.getInt("id") + ","
+                                + "\"fnname\": \"" + rs.getString("first_name") + "\","
+                                + "\"lnname\": \"" + rs.getString("last_name") + "\","
+                                + "\"email\": \"" + email + "\","
+                                + "\"password\": \"" + password + "\"" 
+                                + "}"
+                                + "}");
                         return;
                     }
                 }
             }
-            showPopup(out, "Registration Successful, but login failed. Try again.", "login.jsp");
+
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{"
+                    + "\"code\": 500,"
+                    + "\"message\": \"Registration completed, but user data retrieval failed\","
+                    + "\"data\": null"
+                    + "}");
 
         } catch (SQLException e) {
             e.printStackTrace();
-            response.sendRedirect("error.jsp");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{"
+                    + "\"code\": 500,"
+                    + "\"message\": \"Database Error\","
+                    + "\"data\": null"
+                    + "}");
         }
     }
 
@@ -89,12 +126,5 @@ public class RegisterServlet extends HttpServlet {
             e.printStackTrace();
             return false;
         }
-    }
-
-    private void showPopup(PrintWriter out, String message, String redirectPage) {
-        out.println("<script type='text/javascript'>");
-        out.println("alert('" + message + "');");
-        out.println("window.location.href = '" + redirectPage + "';");
-        out.println("</script>");
     }
 }

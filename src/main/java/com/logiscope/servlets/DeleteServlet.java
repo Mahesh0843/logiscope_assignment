@@ -18,11 +18,19 @@ public class DeleteServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
 
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+
+  
+        if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"code\": 400, \"message\": \"Email and password are required\"}");
+            return;
+        }
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement("DELETE FROM users WHERE email=? AND password=?")) {
@@ -36,20 +44,17 @@ public class DeleteServlet extends HttpServlet {
                 if (session != null && email.equals(session.getAttribute("email"))) {
                     session.invalidate();
                 }
-                showPopup(out, "User Deleted Successfully", "index.jsp");
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                out.print("{\"code\": 200, \"message\": \"User deleted successfully\"}");
             } else {
-                showPopup(out, "Deletion Failed! Incorrect credentials or user does not exist.", "delete.jsp");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                out.print("{\"code\": 401, \"message\": \"Incorrect email or password\"}");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            showPopup(out, "Internal Server Error! Please try again.", "delete.jsp");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"code\": 500, \"message\": \"Internal server error\"}");
         }
-    }
-
-    private void showPopup(PrintWriter out, String message, String redirectPage) {
-        out.println("<script type='text/javascript'>");
-        out.println("alert('" + message + "');");
-        out.println("window.location.href = '" + redirectPage + "';");
-        out.println("</script>");
     }
 }

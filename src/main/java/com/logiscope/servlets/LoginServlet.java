@@ -1,6 +1,7 @@
 package com.logiscope.servlets;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,15 +19,23 @@ public class LoginServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        HttpSession session = request.getSession(false);
-        if (session != null && session.getAttribute("email") != null) {
-            response.sendRedirect("userDetails.jsp");
-            return;
-        }
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        PrintWriter out = response.getWriter();
 
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+
+        if (email == null || password == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{"
+                    + "\"code\": 400,"
+                    + "\"message\": \"Email and password are required\","
+                    + "\"data\": null"
+                    + "}");
+            return;
+        }
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT id, first_name, last_name FROM users WHERE email = ? AND password = ?")) {
@@ -36,27 +45,42 @@ public class LoginServlet extends HttpServlet {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                session = request.getSession();
-                session.setAttribute("email", email);
+                HttpSession session = request.getSession(true);
                 session.setAttribute("id", rs.getInt("id"));
                 session.setAttribute("first_name", rs.getString("first_name"));
                 session.setAttribute("last_name", rs.getString("last_name"));
-                session.setMaxInactiveInterval(24 * 60 * 60); 
+                session.setAttribute("email", email);
+                session.setAttribute("password", password); 
+                session.setMaxInactiveInterval(24 * 60 * 60);
 
-                response.sendRedirect("userDetails.jsp");
+                response.setStatus(HttpServletResponse.SC_OK);
+                out.print("{"
+                        + "\"code\": 200,"
+                        + "\"message\": \"success\","
+                        + "\"data\": {"
+                        + "\"id\": " + rs.getInt("id") + ","
+                        + "\"fnname\": \"" + rs.getString("first_name") + "\","
+                        + "\"Inname\": \"" + rs.getString("last_name") + "\","
+                        + "\"email\": \"" + email + "\","
+                        + "\"password\": \"" + password + "\""
+                        + "}"
+                        + "}");
             } else {
-                showPopup(response, "Incorrect Email or Password", "login.jsp");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); 
+                out.print("{"
+                        + "\"code\": 401,"
+                        + "\"message\": \"Invalid email or password\","
+                        + "\"data\": null"
+                        + "}");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            response.sendRedirect("error.jsp");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{"
+                    + "\"code\": 500,"
+                    + "\"message\": \"Database error\","
+                    + "\"data\": null"
+                    + "}");
         }
-    }
-
-    private void showPopup(HttpServletResponse response, String message, String redirectPage) throws IOException {
-        response.getWriter().println("<script type='text/javascript'>");
-        response.getWriter().println("alert('" + message + "');");
-        response.getWriter().println("window.location.href = '" + redirectPage + "';");
-        response.getWriter().println("</script>");
     }
 }
