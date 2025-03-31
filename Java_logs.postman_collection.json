@@ -1,0 +1,232 @@
+{
+	"info": {
+		"_postman_id": "28b86ccf-7b08-4c93-83c5-26071b735f96",
+		"name": "Java_logs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37690813"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8084/Management/get",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "email",
+							"value": "mahesh123@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "qwe",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8084/Management/get",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8084",
+					"path": [
+						"Management",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8084/Management/create",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "firstName",
+							"value": "Khan",
+							"type": "text"
+						},
+						{
+							"key": "lastName",
+							"value": "AB",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "johnabnn@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "mypp",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8084/Management/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8084",
+					"path": [
+						"Management",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8084/Management/delete",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "email",
+							"value": "dfv@fsg.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "fvdvfd",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8084/Management/delete",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8084",
+					"path": [
+						"Management",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8084/Management/update",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "email",
+							"value": "johnab@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "mypp",
+							"type": "text"
+						},
+						{
+							"key": "newFirstName",
+							"value": "sss",
+							"type": "text"
+						},
+						{
+							"key": "newLastName",
+							"value": "mahesh",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8084/Management/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8084",
+					"path": [
+						"Management",
+						"update"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "johnab@gmail.com",
+							"disabled": true
+						},
+						{
+							"key": "password",
+							"value": "mypp",
+							"disabled": true
+						},
+						{
+							"key": "newFirstName",
+							"value": "Mahesh",
+							"disabled": true
+						},
+						{
+							"key": "newLastName",
+							"value": "chand",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
